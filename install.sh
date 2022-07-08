@@ -129,23 +129,25 @@ fi
 
 echo ""
 echo "Setting up database..."
-if [ ! $CI ]; then
-  read -p "Do you want to load example data (WARNING: this will remove all existing database data) (y/N)?" CONT
-  if [ "$CONT" = "y" ]; then
-    echo "Downloading example data from Dispatch repository..."
-    curl -# -o "./$DISPATCH_DB_SAMPLE_DATA_FILE" "$DISPATCH_DB_SAMPLE_DATA_URL"
-    echo "Dropping database dispatch if it already exists..."
-    docker-compose run -e "PGPASSWORD=$POSTGRES_PASSWORD" --rm postgres dropdb -h $DATABASE_HOSTNAME -p $DATABASE_PORT -U $POSTGRES_USER $DATABASE_NAME --if-exists
-    echo "Creating dispatch database..."
-    docker-compose run -e "PGPASSWORD=$POSTGRES_PASSWORD" --rm postgres createdb -h $DATABASE_HOSTNAME -p $DATABASE_PORT -U $POSTGRES_USER $DATABASE_NAME
-    echo "Loading example data to the database..."
-    docker-compose run -e "PGPASSWORD=$POSTGRES_PASSWORD" -v "$(pwd)/$DISPATCH_DB_SAMPLE_DATA_FILE:/$DISPATCH_DB_SAMPLE_DATA_FILE:Z" --rm postgres psql -h $DATABASE_HOSTNAME -p $DATABASE_PORT -U $POSTGRES_USER -d $DATABASE_NAME -f "/$DISPATCH_DB_SAMPLE_DATA_FILE"
-    echo "Example data loaded. Navigate to /default/auth/register and create a new user."
-  else
-    echo "Initializing the database"
-    docker-compose run --rm web database init
-  fi
-fi
+echo "Initializing the database"
+docker-compose run --rm web database init
+# if [ ! $CI ]; then
+#   read -p "Do you want to load example data (WARNING: this will remove all existing database data) (y/N)?" CONT
+#   if [ "$CONT" = "y" ]; then
+#     echo "Downloading example data from Dispatch repository..."
+#     curl -# -o "./$DISPATCH_DB_SAMPLE_DATA_FILE" "$DISPATCH_DB_SAMPLE_DATA_URL"
+#     echo "Dropping database dispatch if it already exists..."
+#     docker-compose run -e "PGPASSWORD=$POSTGRES_PASSWORD" --rm postgres dropdb -h $DATABASE_HOSTNAME -p $DATABASE_PORT -U $POSTGRES_USER $DATABASE_NAME --if-exists
+#     echo "Creating dispatch database..."
+#     docker-compose run -e "PGPASSWORD=$POSTGRES_PASSWORD" --rm postgres createdb -h $DATABASE_HOSTNAME -p $DATABASE_PORT -U $POSTGRES_USER $DATABASE_NAME
+#     echo "Loading example data to the database..."
+#     docker-compose run -e "PGPASSWORD=$POSTGRES_PASSWORD" -v "$(pwd)/$DISPATCH_DB_SAMPLE_DATA_FILE:/$DISPATCH_DB_SAMPLE_DATA_FILE:Z" --rm postgres psql -h $DATABASE_HOSTNAME -p $DATABASE_PORT -U $POSTGRES_USER -d $DATABASE_NAME -f "/$DISPATCH_DB_SAMPLE_DATA_FILE"
+#     echo "Example data loaded. Navigate to /default/auth/register and create a new user."
+#   else
+#     echo "Initializing the database"
+#     docker-compose run --rm web database init
+#   fi
+# fi
 echo "Running standard database migrations..."
 docker-compose run --rm web database upgrade
 
@@ -160,6 +162,7 @@ echo "----------------"
 echo "You're all done! Run the following command to get Dispatch running:"
 echo ""
 echo "  docker-compose up -d"
+docker-compose up -d
 echo ""
 echo "Once running, access the Dispatch UI at:"
 echo ""
